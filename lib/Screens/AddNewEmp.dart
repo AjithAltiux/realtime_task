@@ -53,7 +53,7 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: object.roleController,
+              
               decoration: InputDecoration(
                 prefixIcon: Padding(
                   padding: const EdgeInsets.all(15.0),
