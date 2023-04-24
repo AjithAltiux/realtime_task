@@ -17,7 +17,6 @@ class AddNewEmployee extends StatefulWidget {
 }
 
 class _AddNewEmployeeState extends State<AddNewEmployee> {
-  String _selectedDate = '';
   @override
   Widget build(BuildContext context) {
     return Consumer<EmployeeProvider>(builder: (context, object, child) {
@@ -53,7 +52,7 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
             ),
             const SizedBox(height: 16),
             TextField(
-              
+              controller: object.roleController,
               decoration: InputDecoration(
                 prefixIcon: Padding(
                   padding: const EdgeInsets.all(15.0),
@@ -67,11 +66,13 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                 border: const OutlineInputBorder(),
               ),
               onTap: () async {
-                FocusScope.of(context).unfocus();
+                setState(() {
+                  FocusScope.of(context).unfocus();
+                });
                 final selectedRole = await showModalBottomSheet<String>(
                   context: context,
                   builder: (BuildContext context) {
-                    return Container(
+                    return SizedBox(
                       height: MediaQuery.of(context).size.height / 3,
                       child: ListView.builder(
                         itemCount: object.roles.length,
@@ -80,6 +81,9 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                           return ListTile(
                             title: Text(role),
                             onTap: () {
+                              setState(() {
+                                FocusScope.of(context).unfocus();
+                              });
                               Navigator.pop(context, role);
                             },
                           );
@@ -89,6 +93,9 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                   },
                 );
                 if (selectedRole != null) {
+                  setState(() {
+                    FocusScope.of(context).unfocus();
+                  });
                   object.selectedRole = selectedRole;
                   object.roleController.text = object.selectedRole;
                 }
@@ -137,7 +144,9 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                   flex: 2,
                   child: GestureDetector(
                     onTap: () {
-                      showDateDialog(context, object.endDate!);
+                      setState(() {
+                        showDateDialog(context, object.endDate!);
+                      });
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -163,86 +172,6 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
         ),
       );
     });
-  }
-
-  Future<void> selectDate(BuildContext context) async {
-    final DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2022),
-      lastDate: DateTime(2025),
-    );
-    if (selectedDate != null) {
-      setState(() {
-        _selectedDate = selectedDate.toString();
-      });
-    }
-  }
-
-  // Create week date picker with passed parameters
-  Widget buildWeekDatePicker(
-      DateTime selectedDate, ValueChanged<DatePeriod> onNewSelected) {
-    // add some colors to default settings
-    DatePickerRangeStyles styles = DatePickerRangeStyles(
-        selectedDateStyle: const TextStyle(
-          color: Colors.white,
-        ),
-        currentDateStyle: TextStyle(color: Colors.white));
-
-    return WeekPicker(
-        initiallyShowDate: selectedDate,
-        selectedDate: selectedDate,
-        onChanged: onNewSelected,
-        firstDate: DateTime(1800),
-        lastDate: DateTime(2100),
-        datePickerStyles: styles);
-  }
-
-  Future<void> _selectNextMonday(DateTime selectedDate) async {
-    final today = selectedDate;
-    final daysUntilMonday = today.weekday + DateTime.monday;
-    final nextMonday = today.add(Duration(days: daysUntilMonday));
-    setState(() {
-      _selectedDate = nextMonday.toString();
-    });
-  }
-
-  Future<void> _selectNextTuesday(DateTime selectedDate) async {
-    final today = selectedDate;
-    final daysUntilTuesday = today.weekday + DateTime.tuesday;
-    final nextTuesday = today.add(Duration(days: daysUntilTuesday));
-    setState(() {
-      _selectedDate = nextTuesday.toString();
-    });
-  }
-
-  String _selectAfterOneWeek(DateTime selectedDate) {
-    final today = selectedDate;
-    final afterOneWeek = today.add(const Duration(days: 7));
-    setState(() {
-      _selectedDate = afterOneWeek.toString();
-      selectedDate = afterOneWeek;
-    });
-    return _selectedDate;
-  }
-
-  Widget getDateRangePicker() {
-    return SizedBox(
-        height: 250,
-        child: Card(
-            child: SfDateRangePicker(
-          view: DateRangePickerView.month,
-          selectionMode: DateRangePickerSelectionMode.single,
-          onSelectionChanged: selectionChanged,
-        )));
-  }
-
-  void selectionChanged(DateRangePickerSelectionChangedArgs args) {
-    _selectedDate = DateFormat('dd MMM yyyy').format(args.value);
-
-    // SchedulerBinding.instance!.addPostFrameCallback((duration) {
-    //   setState(() {});
-    // });
   }
 
   showDateDialog(BuildContext context, DateTime selectedDate) {
@@ -280,13 +209,17 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                               setState(() {
                                 selectedIndex = index;
                                 if (index == 0) {
+                                  object.selectedDate1 =
+                                      object.selectToday(selectedDate);
                                 } else if (index == 1) {
-                                  _selectNextMonday(selectedDate);
+                                  object.selectedDate1 =
+                                      object.selectNextMonday(selectedDate);
                                 } else if (index == 2) {
-                                  _selectNextTuesday(selectedDate);
+                                  object.selectedDate1 =
+                                      object.selectNextTuesday(selectedDate);
                                 } else {
-                                  _selectedDate =
-                                      _selectAfterOneWeek(selectedDate);
+                                  object.selectedDate1 =
+                                      object.selectAfterOneWeek(selectedDate);
                                 }
                               });
                             },
@@ -314,7 +247,7 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                         },
                       ),
                     ),
-                    getDateRangePicker()
+                    object.getDateRangePicker(selectedDate)
                   ],
                 ),
               ),
@@ -325,10 +258,10 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                     const SizedBox(
                       width: 05,
                     ),
-                    Text(_selectedDate == ""
+                    Text(object.selectedDate1 == ""
                         ? ""
                         : DateFormat('dd MMM yyyy')
-                            .format(DateTime.parse(_selectedDate))
+                            .format(DateTime.parse(object.selectedDate1))
                             .toString()),
                     const SizedBox(
                       width: 30,

@@ -1,4 +1,4 @@
-#Mon Apr 24 12:19:40 IST 2023
+#Mon Apr 24 16:53:02 IST 2023
 base.0=D\:\\OneDrive - Altiux Innovations Pvt Ltd\\Projects\\realtime_task\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\classes.dex
 path.0=classes.dex
 renamed.0=classes.dex
